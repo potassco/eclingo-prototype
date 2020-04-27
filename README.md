@@ -12,5 +12,5 @@ for every atom `A` such that `k(A)` appears in the input program.
 Furthermore, `k(A)` must be `#shown`, as well as the atoms `A` inside the `k`'s.
 
 The 3 implementations are described and implemented in the files
-`meta.lp`, `inc_meta.py`, and `egc.py` in the directory `eclingo`.
+`main.lp`, `inc_meta.py`, and `egc.py` in the directory `eclingo`.
 Some examples are available in the `eclingo/examples` directory.
