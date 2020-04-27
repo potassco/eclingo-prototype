@@ -11,8 +11,3 @@ dom(1..100).
 :- not x, not y.
 { x; y }.
 
-%*
-#project k/1.
-#show k/1.
-#show a/1.
-*%
