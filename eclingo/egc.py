@@ -14,8 +14,8 @@ import sys
 import clingo
 import copy
 
-GUESS_FILES = [ "egc_main.lp", "egc_guess.lp", "ktuple.lp", "many.lp", "level.lp" ]
-CHECK_FILES = [ "egc_main.lp", "egc_check.lp", "ktuple.lp", "many.lp", "level.lp", "egc_faeel.lp" ]
+GUESS_FILES = [ "egc_main.lp", "egc_guess.lp", "ktuple.lp", "meta_many.lp", "level.lp" ]
+CHECK_FILES = [ "egc_main.lp", "egc_check.lp", "ktuple.lp", "meta_many.lp", "level.lp", "egc_faeel.lp" ]
 
 # options
 files, options, max_models, faeel = [], [], 1, False
