@@ -1,8 +1,8 @@
 #script(python)
 
 #
-# Usage: clingo-banane --output=reify --reify-sccs       FILES |  clingo-banane -Wno-atom-undefined - inc_meta.py metaD.lp 0 OPTIONS
-#        clingo-banane --output=reify --reify-sccs example1.lp |  clingo-banane -Wno-atom-undefined - inc_meta.py metaD.lp 0
+# Usage: clingo-banane --output=reify --reify-sccs       FILES |  clingo-banane -Wno-atom-undefined - inc_meta.py main.lp metaD.lp 0 OPTIONS
+#        clingo-banane --output=reify --reify-sccs example1.lp |  clingo-banane -Wno-atom-undefined - inc_meta.py main.lp metaD.lp 0
 # Note: Computes only one solution. To compute more, we have to add constraints
 #       We need clingo-banane because we use a [free] external
 #
@@ -34,6 +34,7 @@ def main(control):
                 return
             # if UNSAT or last step: return UNSAT
             if last is None or step == ks:
+                print("UNSATISFIABLE (NO WORLD VIEW)")
                 return
             # if SAT and cost == 1: continue
         step += 1
@@ -42,34 +43,15 @@ def main(control):
 
 #program base.
 
-% the conjunction of k(A) is B1 and the one of A is B2
-ktuple(A,B1,B2) :- output(k(A),B1),     output(A,B2).
-ktuple(A,B1,xx) :- output(k(A),B1), not output(A, _).
+% fix knowledge atoms in the models
+skip(1). % skip the rule in main.lp, this is defined in guess(m)
 
-% choose knowledge atoms
-{ k(A) } :- ktuple(A,B1,B2).
-
-% check false knowledge atoms
+% check false knowledge atoms in the models
 %  if k(A) is false then A is false in some model m > 0
-:- ktuple(A,B1,B2), not k(A), not false_after(A,0).
-#external false_after(A,0) : ktuple(A,B1,B2).
+:- ktuple(A,L1,L2), not k(A), not false_after(A,0).
+#external false_after(A,0) : ktuple(A,L1,L2).
+skip(2). % skip the rule in main.lp
 
-% fix knowledge atoms in the counter model
-bot :- ktuple(A,B1,B2),     k(A), fail(normal(B1)).
-bot :- ktuple(A,B1,B2), not k(A), true(normal(B1)).
-
-% check true knowledge atoms in the counter model
-ok(A) :- ktuple(A,B1,B2), not k(A).
-ok(A) :- ktuple(A,B1,B2), true(normal(B2)).
-bot :- ok(A) : ktuple(A,B1,B2). % this also deduces bot if
-                                % there are no knowledge atoms
-
-% bot must hold in the counter model
-:- not bot.
-
-% show knowledge atoms
-#show k/1.
-%#show false_after/2.
 
 #program guess(m).
 
@@ -96,14 +78,14 @@ body(sum(B,G),m)  :- model(m), rule(_,sum(B,G)),
 %#show (T,M) : output(T,B), conjunction(B,M), not hide(T).
 
 % fix knowledge atoms in the model
-:- ktuple(A,B1,B2), model(m), k(A), not conjunction(B1,m).
-:- ktuple(A,B1,B2), model(m), not k(A), conjunction(B1,m).
+:- ktuple(A,L1,L2), model(m), k(A), not hold(L1,m).
+:- ktuple(A,L1,L2), model(m), not k(A), hold(L1,m).
 
 % for checking false knowledge atoms
 %   A is false after m-1 if it is false at m or it is false after m
-false_after(A,m-1) :- ktuple(A,B1,B2), not conjunction(B2,m).
-false_after(A,m-1) :- ktuple(A,B1,B2), false_after(A,m).
-#external false_after(A,m) : ktuple(A,B1,B2). [free]
+false_after(A,m-1) :- ktuple(A,L1,L2), not hold(L2,m).
+false_after(A,m-1) :- ktuple(A,L1,L2), false_after(A,m).
+#external false_after(A,m) : ktuple(A,L1,L2). [free]
 
 % minimize false_after(m) where m is the last model
 #minimize{ 1 : false_after(A,m), not not_last(m) }.

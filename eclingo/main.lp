@@ -19,12 +19,15 @@ ktuple(A,L1, x) :- output(k(A),B1), literal_tuple(B1,L1), not output(A,_).
 % guess knowledge atoms
 { k(A) } :- ktuple(A,_,_).
 
+% add skip(1) or skip(2) to delete the next constraints
+#defined skip/1.
+
 % fix knowledge atoms in the models
-:- ktuple(A,L1,L2), model(M), k(A), not hold(L1,M).
-:- ktuple(A,L1,L2), model(M), not k(A), hold(L1,M).
+:- ktuple(A,L1,L2), model(M), k(A), not hold(L1,M), not skip(1).
+:- ktuple(A,L1,L2), model(M), not k(A), hold(L1,M), not skip(1).
 
 % check false knowledge atoms in the models
-:- ktuple(A,L1,L2), not k(A), hold(L2,M) : model(M).
+:- ktuple(A,L1,L2), not k(A), hold(L2,M) : model(M); not skip(2).
 
 % fix knowledge atoms in the counter model
 bot :- ktuple(A,L1,L2),     k(A), fail(atom(L1)).
@@ -33,7 +36,7 @@ bot :- ktuple(A,L1,L2), not k(A), true(atom(L1)).
 % check true knowledge atoms in the counter model
 ok(A) :- ktuple(A,L1,L2), not k(A).
 ok(A) :- ktuple(A,L1,L2), true(atom(L2)),
-         hold(L2) : faeel.
+         hold(L1) : faeel. % REPLACED L2 by L1
 bot :- ok(A) : ktuple(A,L1,L2). % this also deduces bot if
                                 % there are no knowledge atoms
 
