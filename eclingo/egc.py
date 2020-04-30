@@ -4,8 +4,8 @@
 #       python egc.py files [options]
 #       python egc.py example1.lp 0 --project
 # * Usage (Faeel):
-#       clingo --output=reify       files > out.tmp; python egc_faeel.py out.tmp -faeel [options]
-#       clingo --output=reify example1.lp > out.tmp; python egc_faeel.py out.tmp -faeel  0 --project
+#       clingo --output=reify       files > out.tmp; python egc.py out.tmp --faeel [options]
+#       clingo --output=reify example1.lp > out.tmp; python egc.py out.tmp --faeel  0 --project
 # * It is more efficient if only the k(A) atoms and the As inside them are shown
 # * It is more efficient projecting on the k(A) atoms
 #
@@ -22,7 +22,7 @@ files, options, max_models, faeel = [], [], 1, False
 for i in sys.argv[1:]:
     if i == "--faeel":
         faeel = True
-    if i[0] == "-":
+    elif i[0] == "-":
         options.append(i)
     elif i.isdigit():
         max_models = i
