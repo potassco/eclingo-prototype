@@ -1,10 +1,15 @@
 #script(python)
 
 #
-# Usage: clingo-banane --output=reify --reify-sccs       FILES |  clingo-banane -Wno-atom-undefined - inc_meta.py main.lp metaD.lp 0 OPTIONS
-#        clingo-banane --output=reify --reify-sccs example1.lp |  clingo-banane -Wno-atom-undefined - inc_meta.py main.lp metaD.lp 0
+# Usage: clingo-banane --output=reify --reify-sccs       FILES | clingo-banane -Wno-atom-undefined - inc_meta.py meta_main.lp ktuple.lp metaD.lp [level.lp meta_faeel.lp] -project OPTIONS
+#        clingo-banane --output=reify --reify-sccs example1.lp | clingo-banane -Wno-atom-undefined - inc_meta.py meta_main.lp ktuple.lp metaD.lp  level.lp meta_faeel.lp  -project 0
+
+# Note: Without the files level.lp and faeel.lp
+#       the encoding represents Gelfond91 world views, while with them
+#       the encoding represents     Faeel world views
+#
 # Note: Computes only one solution. To compute more, we have to add constraints
-#       We need clingo-banane because we use a [free] external
+#       We need clingo-banane (or clingo-5.5) because we use a [free] external
 #
 
 K_NAME = "k"
@@ -52,6 +57,8 @@ skip(1). % skip the rule in main.lp, this is defined in guess(m)
 #external false_after(A,0) : ktuple(A,L1,L2).
 skip(2). % skip the rule in main.lp
 
+% skip the generation of model/1 atoms from main.lp
+skip(3).
 
 #program guess(m).
 

@@ -2,9 +2,6 @@
 % meta.lp modified
 %
 
-% as many models as k/1 atoms
-%model(1..M) :- M = { output(k(A),B) }.
-
 conjunction(B,M) :- model(M), literal_tuple(B),
         hold(L,M) : literal_tuple(B, L), L > 0;
     not hold(L,M) : literal_tuple(B,-L), L > 0.

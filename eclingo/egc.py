@@ -1,7 +1,11 @@
 #
 # Notes:
-# * Usage: python egc.py files [options]
-#          python egc.py example1.lp 0 --project
+# * Usage (Gelfond91):
+#       python egc.py files [options]
+#       python egc.py example1.lp 0 --project
+# * Usage (Faeel):
+#       clingo --output=reify       files > out.tmp; python egc_faeel.py out.tmp -faeel [options]
+#       clingo --output=reify example1.lp > out.tmp; python egc_faeel.py out.tmp -faeel  0 --project
 # * It is more efficient if only the k(A) atoms and the As inside them are shown
 # * It is more efficient projecting on the k(A) atoms
 #
@@ -10,9 +14,14 @@ import sys
 import clingo
 import copy
 
+GUESS_FILES = [ "egc_main.lp", "egc_guess.lp", "ktuple.lp", "many.lp", "level.lp" ]
+CHECK_FILES = [ "egc_main.lp", "egc_check.lp", "ktuple.lp", "many.lp", "level.lp", "egc_faeel.lp" ]
+
 # options
-files, options, max_models = [], [], 1
+files, options, max_models, faeel = [], [], 1, False
 for i in sys.argv[1:]:
+    if i == "--faeel":
+        faeel = True
     if i[0] == "-":
         options.append(i)
     elif i.isdigit():
@@ -24,6 +33,9 @@ for i in sys.argv[1:]:
 guess = clingo.Control(options + ["0"])
 for i in files:
     guess.load(i)
+if faeel:
+    for i in GUESS_FILES:
+        guess.load(i)
 guess.ground([("base", [])])
 
 # check
@@ -31,6 +43,9 @@ guess.ground([("base", [])])
 check = clingo.Control(["0", "--enum-mode=cautious"])
 for i in files:
     check.load(i)
+if faeel:
+    for i in CHECK_FILES:
+        check.load(i)
 check.ground([("base", [])])
 
 # gather knowledge predicates and atoms
@@ -50,6 +65,7 @@ for name, arity in k_preds:
 guess.add("constraint", [], constraint)
 guess.ground([("constraint", [])])
 
+
 # solve
 models = 0
 with guess.solve(yield_=True) as guess_handle:
@@ -65,10 +81,11 @@ with guess.solve(yield_=True) as guess_handle:
             else:
                 k_false.append(atom)
         # check guess_model
-        ok = True
+        ok, unsat = True, True
         a = [(k, True) for k in k_true] + [(k, False) for k in k_false]
         with check.solve(yield_=True, assumptions=a) as check_handle:
             for check_model in check_handle:
+                unsat = False
                 # print check_model
                 print("Check Answer: ")
                 print(" ".join([str(s) for s in check_model.symbols(shown=True)]))
@@ -79,13 +96,13 @@ with guess.solve(yield_=True) as guess_handle:
                         break
                 if not ok:
                     break
-            if ok:
+            if ok and not unsat:
                 # check false knowledge atoms
                 for atom in k_false:
                     if check_model.contains(atom.arguments[0]):
                         ok = False
                         break
-        if ok:
+        if ok and not unsat:
             models += 1
             print("* Answer {}: ".format(models))
             print(" ".join([str(s) for s in guess_model.symbols(shown=True)]))
