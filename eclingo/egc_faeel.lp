@@ -40,11 +40,14 @@ body(sum(B,G))  :- rule(_, sum(B,G)),
            W,L : not hold(L,1), weighted_literal_tuple(B,-L,W), L > 0 } >= G.
 
 % A holds (when A is a not a knowledge atom)
+hold(A) : atom_tuple(H,A), hold(A,1) :-
+          atom_tuple(H,AA), not ktuple(_,AA,_),
+          rule(disjunction(H),B), body(B).
 hold(A) :- atom_tuple(H,A), hold(A,1), not ktuple(_,A,_),
-           rule(head(H),B), body(B).
+           rule(choice(H),B), body(B).
 
 % A holds (when A is       a knowledge atom)
-hold(A) :- ktuple(_,A,B), hold(B), hold(B,1) : truex = 1;
+hold(A) :- ktuple(_,A,B), hold(A,1), hold(B), hold(B,1) : truex = 1;
            hold(D) : ktuple(_,C,D),            truey = 0,
                      scc(SCC,A), level(A,LA),
                      scc(SCC,C), level(C,LC), LC < LA;
