@@ -55,7 +55,7 @@ hold(A) :- atom_tuple(H,A), true(atom(A)), not ktuple(_,A,_),
            rule(head(H),B), body(B).
 
 % A holds (when A is       a knowledge atom)
-hold(A) :- ktuple(_,A,B), hold(B), true(atom(B)) : truex = 1;
+hold(A) :- ktuple(_,A,B), true(atom(A)), hold(B), true(atom(B)) : truex = 1;
            hold(D) : ktuple(_,C,D),                truey = 0,
                      scc(SCC,A), level(A,LA),
                      scc(SCC,C), level(C,LC), LC < LA;
